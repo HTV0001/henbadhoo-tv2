@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Henbadhoo Television</title>
+
+<style>
+
+/* Dhivehi Font */
+@font-face {
+font-family: "Eamaan";
+src: url("Mv_Eamaan_XP.otf") format("opentype");
+}
+
+/* TAN Headline font (place file in same folder) */
+@font-face {
+font-family: "TanHeadline";
+src: url("TAN-HEADLINE.otf") format("opentype");
+}
+
+body{
+margin:0;
+background:#000;
+color:white;
+font-family:Arial, sans-serif;
+}
+
+/* Header */
+header{
+background:#000;
+padding:30px;
+text-align:center;
+border-bottom:1px solid #222;
+}
+
+.logo{
+width:220px;
+}
+
+/* Bio text */
+.bio{
+font-family:"TanHeadline", serif;
+font-size:24px;
+margin-top:15px;
+}
+
+/* Navigation */
+nav{
+background:#111;
+padding:12px;
+text-align:center;
+}
+
+nav a{
+color:white;
+margin:0 20px;
+text-decoration:none;
+font-weight:bold;
+}
+
+/* Sections */
+.section{
+padding:40px;
+max-width:1200px;
+margin:auto;
+}
+
+/* Live badge */
+.live{
+color:red;
+font-weight:bold;
+font-size:20px;
+}
+
+/* Video grid */
+.video-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+/* Video card */
+.video-card{
+background:#111;
+border-radius:8px;
+padding:10px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.video-card:hover{
+transform:scale(1.04);
+}
+
+.video-card img{
+width:100%;
+border-radius:6px;
+}
+
+/* Dhivehi titles */
+.video-title{
+font-family:"Eamaan";
+direction:rtl;
+text-align:right;
+font-size:20px;
+margin-top:8px;
+}
+
+footer{
+text-align:center;
+padding:20px;
+color:#888;
+margin-top:40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<img src="htv.png" class="logo">
+
+<div class="bio">
+📺 HTV – Henbadhoo Television<br>
+Broadcasting with integrity, creativity, and cultural pride. 🌊✨
+</div>
+
+</header>
+
+<nav>
+<a href="#live">Live</a>
+<a href="#videos">Videos</a>
+</nav>
+
+<div class="section" id="live">
+
+<h2>🔴 Live Stream</h2>
+
+<div id="liveContainer">
+Checking livestream status...
+</div>
+
+</div>
+
+<div class="section" id="videos">
+
+<h2>Videos</h2>
+
+<div class="video-grid" id="videosContainer"></div>
+
+</div>
+
+<footer>
+Henbadhoo Television
+</footer>
+
+<script>
+
+const API_KEY = "AIzaSyC1497MZFt9XwL1xZ1mnkpG0zGItimF-vs";
+const HANDLE = "henbadhootelevision";
+
+let channelId="";
+
+async function getChannel(){
+
+let url=`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${HANDLE}&key=${API_KEY}`;
+
+let res=await fetch(url);
+let data=await res.json();
+
+channelId=data.items[0].id;
+
+loadLive();
+loadVideos();
+
+}
+
+async function loadLive(){
+
+let url=`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${API_KEY}`;
+
+let res=await fetch(url);
+let data=await res.json();
+
+let container=document.getElementById("liveContainer");
+
+if(data.items.length>0){
+
+let videoId=data.items[0].id.videoId;
+
+container.innerHTML=`
+<p class="live">LIVE NOW</p>
+<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
+Watch the livestream on YouTube
+</a>
+`;
+
+}else{
+
+container.innerHTML=`<p>No livestreams at the moment.</p>`;
+
+}
+
+}
+
+async function loadVideos(){
+
+let url=`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&maxResults=12&order=date&type=video&key=${API_KEY}`;
+
+let res=await fetch(url);
+let data=await res.json();
+
+let container=document.getElementById("videosContainer");
+
+data.items.forEach(video=>{
+
+let videoId=video.id.videoId;
+let title=video.snippet.title;
+
+container.innerHTML+=`
+
+<div class="video-card"
+onclick="window.open('https://www.youtube.com/watch?v=${videoId}','_blank')">
+
+<img src="${video.snippet.thumbnails.high.url}">
+
+<div class="video-title">${title}</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+getChannel();
+
+</script>
+
+</body>
+</html>
